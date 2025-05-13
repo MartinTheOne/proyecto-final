@@ -1,4 +1,5 @@
 "use client"
+import { useState, useEffect } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -21,15 +22,11 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { Cliente } from "@/interfaces/Icliente"
 
-// Datos de ejemplo para los selects
-const clientes = [
-  { id: "1", nombre: "Juan Pérez" },
-  { id: "2", nombre: "María López" },
-  { id: "3", nombre: "Carlos Rodríguez" },
-  { id: "4", nombre: "Ana Martínez" },
-  { id: "5", nombre: "Roberto Sánchez" },
-]
+
+
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 
 const casos = [
   { id: "1", titulo: "Reclamación laboral" },
@@ -72,6 +69,10 @@ interface TareaDialogProps {
 }
 
 export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, description, buttonText }: TareaDialogProps) {
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
   const form = useForm<TareaFormValues>({
     resolver: zodResolver(tareaSchema),
     defaultValues: {
@@ -90,6 +91,26 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
     onOpenChange(false)
     form.reset()
   }
+
+
+useEffect(()=>{
+  const getClientes = async ()=>{
+    try {
+      const response = await fetch(`${baseUrl}/api/clientes`)
+      if (!response.ok) {
+        throw new Error('Error al obtener los clientes')
+      }
+      const data = await response.json()
+      console.log(data)
+      setClientes(data)
+    } catch (error) {
+      
+    }
+  }
+  getClientes()
+},[])
+
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,7 +162,7 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
                       </FormControl>
                       <SelectContent>
                         {clientes.map((cliente) => (
-                          <SelectItem key={cliente.id} value={cliente.id}>
+                          <SelectItem key={cliente._id} value={cliente._id}>
                             {cliente.nombre}
                           </SelectItem>
                         ))}

@@ -1,4 +1,5 @@
 "use client"
+import {useEffect, useState} from 'react'
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -21,15 +22,9 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import {Cliente} from '@/interfaces/Icliente'
 
-// Datos de ejemplo para los selects
-const clientes = [
-  { id: "1", nombre: "Juan Pérez" },
-  { id: "2", nombre: "María López" },
-  { id: "3", nombre: "Carlos Rodríguez" },
-  { id: "4", nombre: "Ana Martínez" },
-  { id: "5", nombre: "Roberto Sánchez" },
-]
+
 
 const tiposCaso = [
   "Civil",
@@ -78,6 +73,7 @@ interface CasoDialogProps {
 }
 
 export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, description, buttonText }: CasoDialogProps) {
+  const [clientes, setClientes] = useState<Cliente[]>([])
   const form = useForm<CasoFormValues>({
     resolver: zodResolver(casoSchema),
     defaultValues: {
@@ -97,6 +93,25 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
     onOpenChange(false)
     form.reset()
   }
+
+
+  useEffect(()=>{
+    const getClientes = async ()=>{
+      try{
+        const response = await fetch('http://localhost:3000/api/clientes')
+        const data = await response.json()
+        if (response.ok) {
+          setClientes(data)
+        } else {
+          console.error("Error fetching clientes:", data)
+        }
+      }catch(ex){
+        console.log(ex)
+      }
+    }
+    getClientes()
+  } 
+  ,[])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -148,7 +163,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                       </FormControl>
                       <SelectContent>
                         {clientes.map((cliente) => (
-                          <SelectItem key={cliente.id} value={cliente.id}>
+                          <SelectItem key={cliente._id} value={cliente._id}>
                             {cliente.nombre}
                           </SelectItem>
                         ))}
