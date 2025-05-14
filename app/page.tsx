@@ -3,18 +3,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Users, CreditCard, CheckSquare, Briefcase, Clock, TrendingUp, AlertCircle } from "lucide-react"
 import { formatCurrency, formatDate, parseDate } from "@/lib/utils"
 import { differenceInDays, isToday, isTomorrow } from "date-fns"
+import { getDashboard } from "@/lib/obtener"
 
 async function getDashboardData() {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL || ""}/api/dashboard`, {
-      cache: "no-store",
-    })
+    const res = await getDashboard();
 
-    if (!res.ok) {
+    if (!res) {
       throw new Error("Failed to fetch dashboard data")
     }
 
-    return res.json()
+    return res
   } catch (error) {
     console.error("Error fetching dashboard data:", error)
     return {

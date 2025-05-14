@@ -1,8 +1,14 @@
+import { getTareas } from '@/lib/obtener'
 import TareasPage from './tareas'
 export default async function Tareas() {
-  const tareas = await fetch(`${process.env.NEXTAUTH_URL}/api/tareas`)
-  const data = await tareas.json()
+  const tareas = await getTareas();
+  if (!tareas) throw new Error("No se encontró los clientes.");;
+  const pagosSerializados = tareas.map(cli => ({
+    ...cli,
+    _id: cli._id.toString(),
+  }));
+
   return (
-    <TareasPage InitialTareas={data} />
+    <TareasPage InitialTareas={pagosSerializados} />
   )
 }

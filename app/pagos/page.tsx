@@ -1,10 +1,14 @@
+import { getPagos } from "@/lib/obtener";
 import PagosPage from "./pagos";
 
 export default async function Pagos() {
-  const pagos = await fetch(`${process.env.NEXTAUTH_URL}/api/pagos`);
-  const dataPagos = await pagos.json();
+  const pagos = await getPagos();
 
-  return (
-    <PagosPage pagos={dataPagos}  />
-  );
+  if (!pagos) throw new Error("No se encontró la configuración.");;
+  const pagosSerializados = pagos.map(pago => ({
+    ...pago,
+    _id: pago._id.toString(),
+  }));
+
+  return <PagosPage pagos={pagosSerializados} />;
 }

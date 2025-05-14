@@ -19,7 +19,6 @@ interface ClientesPageProps {
 
 export default function ClientesPage({ initialClientes }: ClientesPageProps) {
 
-    console.log(initialClientes)
     const [clientes, setClientes] = useState<Cliente[]>(initialClientes)
     const [searchTerm, setSearchTerm] = useState("")
     const [openCreateDialog, setOpenCreateDialog] = useState(false)

@@ -1,9 +1,16 @@
+import { getClientes } from "@/lib/obtener"
 import ClientesPage from "./clientes"
 export default async function Clientes() {
-  const clientes = await fetch(`${process.env.NEXTAUTH_URL}/api/clientes`)
-  const data = await clientes.json()
+  const clientes = await getClientes();
+
+  if (!clientes) throw new Error("No se encontró los clientes.");;
+  const pagosSerializados = clientes.map(cli => ({
+    ...cli,
+    _id: cli._id.toString(),
+  }));
+
   return (
-    <ClientesPage initialClientes={data} />
+    <ClientesPage initialClientes={pagosSerializados || []} />
   )
 
 }
