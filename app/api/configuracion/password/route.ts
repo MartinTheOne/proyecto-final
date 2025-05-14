@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { hash,compare } from "bcrypt";
+import { hash,compare } from "bcryptjs";
 const uri = process.env.MONGODB_URI || "";
 const client = new MongoClient(uri);
 const dbName = process.env.DB_NAME || "";

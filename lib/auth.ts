@@ -1,4 +1,4 @@
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs"
 import { MongoClient } from "mongodb"
 
 const uri = process.env.MONGODB_URI || ""
