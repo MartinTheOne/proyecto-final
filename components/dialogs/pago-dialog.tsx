@@ -154,14 +154,15 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
             </div>
             <FormField
               control={form.control}
-              name="cliente"
-              render={({ field }) => (
+              name="caso"
+              render={({ field }) =>{
+                return(
                 <FormItem>
                   <FormLabel>Caso</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un Caso  " />
+                        <SelectValue placeholder="Seleccione un Caso" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -174,7 +175,7 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
                   </Select>
                   <FormMessage />
                 </FormItem>
-              )}
+              )}}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField

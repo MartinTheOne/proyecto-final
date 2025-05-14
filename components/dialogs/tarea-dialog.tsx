@@ -24,10 +24,8 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Cliente } from "@/interfaces/Icliente"
 import { Casos } from "@/interfaces/ICasos"
+import { Tareas } from "@/interfaces/ITareas"
 
-
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 
 
 // Esquema de validación para el formulario de tarea
@@ -46,16 +44,7 @@ type TareaFormValues = z.infer<typeof tareaSchema>
 interface TareaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tarea?: {
-    _id?: number
-    titulo?: string
-    descripcion?: string
-    cliente?: string
-    caso?: string
-    fechaLimite?: Date
-    prioridad?: string
-    estado?: string
-  }
+  tarea?: Tareas | null
   onSubmit: (values: TareaFormValues) => void
   title: string
   description: string
@@ -67,8 +56,6 @@ interface TareaDialogProps {
 
 export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, description, buttonText, casos, clientes }: TareaDialogProps) {
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<TareaFormValues>({
     resolver: zodResolver(tareaSchema),
@@ -101,7 +88,7 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
         estado: (tarea.estado as "Pendiente" | "En progreso" | "Completada") || "Pendiente",
       })
     }
-  }, [tarea, form])
+  }, [tarea, casos, form])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,26 +153,28 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
               <FormField
                 control={form.control}
                 name="caso"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Caso</FormLabel>
-                    <Select onValueChange={field.onChange} {...field}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un caso" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {casos.map((caso) => (
-                          <SelectItem key={caso._id} value={caso.titulo}>
-                            {caso.titulo}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                   return (
+                    <FormItem>
+                      <FormLabel>Caso</FormLabel>
+                      <Select onValueChange={field.onChange}defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione un caso" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {casos.map((caso) => (
+                            <SelectItem key={caso._id} value={caso.titulo}>
+                              {caso.titulo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

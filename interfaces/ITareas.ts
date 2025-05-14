@@ -4,7 +4,7 @@ export interface Tareas{
     cliente:string;
     descripcion:string
     caso:string;
-    fechaLimite:string;
+    fechaLimite:Date;
     prioridad:string;
     estado:string;
 }

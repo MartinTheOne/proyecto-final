@@ -27,7 +27,7 @@ export default function CasosPage({ InitialData }: props) {
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
-  const [currentCaso, setCurrentCaso] = useState<Casos|null>(null)
+  const [currentCaso, setCurrentCaso] = useState<Casos | null>(null)
 
   // Filtrar casos según el término de búsqueda y el filtro de estado
   const filteredCasos = casos.filter(
@@ -329,7 +329,15 @@ export default function CasosPage({ InitialData }: props) {
       <CasoDialog
         open={openCreateDialog}
         onOpenChange={setOpenCreateDialog}
-        onSubmit={handleCreateCaso}
+        onSubmit={(values) => {
+          const casoData: Omit<Casos, "_id"> = {
+            ...values,
+            descripcion: values.descripcion ?? "",
+            notas: values.notas ?? "",
+            fechaFin: values.fechaFin ?? new Date()
+          };
+          return handleCreateCaso(casoData);
+        }}
         title="Nuevo Caso"
         description="Agregue un nuevo caso a su sistema"
         buttonText="Crear Caso"
@@ -340,7 +348,15 @@ export default function CasosPage({ InitialData }: props) {
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         caso={currentCaso}
-        onSubmit={handleEditCaso}
+        onSubmit={(values) => {
+          const casoData: Omit<Casos, "_id"> = {
+            ...values,
+            descripcion: values.descripcion ?? "",
+            notas: values.notas ?? "",
+            fechaFin: values.fechaFin ?? new Date()
+          };
+          return handleEditCaso(casoData);
+        }}
         title="Editar Caso"
         description="Modifique la información del caso"
         buttonText="Guardar Cambios"

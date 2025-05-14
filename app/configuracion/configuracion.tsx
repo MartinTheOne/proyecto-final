@@ -16,8 +16,10 @@ interface pageConfiguracionProps {
 
 export default function ConfiguracionPage({ configuracion: configuracionInicial }: pageConfiguracionProps) {
 
-    const { data: session } = useSession();
-    const [configuracion, setConfiguracion] = useState<Configuracion>(configuracionInicial);
+    const [configuracion, setConfiguracion] = useState<Configuracion>(configuracionInicial ?? {
+        perfil: { nombre: "", apellido: "", email: "", telefono: "", direccion: "" },
+        despacho: { nombre: "", rfc: "", email: "", telefono: "", direccion: "" },
+    });
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -26,8 +28,10 @@ export default function ConfiguracionPage({ configuracion: configuracionInicial 
     const [showNew, setShowNew] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
 
+    const { data: session } = useSession();
 
     const handleSave = async () => {
+        if (!configuracion) return;
         if (!configuracion.perfil.nombre || !configuracion.perfil.apellido || !configuracion.perfil.email || !configuracion.perfil.telefono || !configuracion.perfil.direccion) {
             toast({
                 title: "Error",
@@ -72,6 +76,7 @@ export default function ConfiguracionPage({ configuracion: configuracionInicial 
     }
 
     const handleSaveDespacho = async () => {
+        if (!configuracion) return
         if (!configuracion.despacho.nombre || !configuracion.despacho.rfc || !configuracion.despacho.email || !configuracion.despacho.telefono || !configuracion.despacho.direccion) {
             toast({
                 title: "Error",

@@ -3,13 +3,13 @@ import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
 import { MongoClient, ObjectId } from 'mongodb';
 import { Pago } from "@/interfaces/Ipago"
-import { Cliente } from "@/interfaces/Icliente";
+import { Configuracion } from "@/interfaces/Iconfiguracion";
 // MongoDB connection
 const uri = process.env.MONGODB_URI || '';
 const client = new MongoClient(uri);
 const dbName = process.env.DB_NAME || '';
 const collectionName = 'pagos';
-const collectionCliente = 'clientes';
+const collectionConfig = 'configuracion';
 
 // Interface for Pago
 
@@ -20,17 +20,27 @@ async function connectToDatabase() {
     await client.connect();
     isConnected = true;
   }
-  return client.db(dbName).collection<Pago>(collectionName);
+  return client.db(dbName);
 }
+
 
 export async function findById(id: string) {
   try {
-    const collection = await connectToDatabase();
-    
+    const db = await connectToDatabase();
+    const collection = db.collection(collectionName)
+    const collectionCon = db.collection(collectionConfig)
+
     const pago = await collection.findOne<Pago>({ _id: new ObjectId(id) as any });
-    return pago;
+    const configuracion = await collectionCon.findOne<Configuracion>({});
+
+    if (!pago) return null
+
+    return {
+      pago: pago,
+      configuracion: configuracion
+    };
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch pagos' }, { status: 500 });
+    return null;
   }
 }
 
@@ -42,15 +52,20 @@ export async function GET(request: NextRequest, context: { params: { id: string 
     if (!id) {
       return NextResponse.json({ error: "Falta el parámetro 'id'" }, { status: 400 })
     }
-    const pago = await findById(id)
+    const data = await findById(id)
 
-    if (!pago) {
+    if (!data || !(data as any).pago) {
       return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 })
     }
 
+    if (!(data as any).configuracion) {
+      return NextResponse.json({ error: "configuracion no encontrado" }, { status: 402 })
+    }
+    console.log(data.configuracion)
+
     const doc = new jsPDF()
 
-    generateReceipt(doc, pago)
+    generateReceipt(doc, data.pago, data.configuracion)
 
     const pdfBuffer = doc.output("arraybuffer")
 
@@ -66,7 +81,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
   }
 }
 
-function generateReceipt(doc: jsPDF, pago: any) {
+function generateReceipt(doc: jsPDF, pago: any, configuracion: any) {
 
   const primaryColor = "#001F3F"
   const secondaryColor = "#003366"
@@ -89,10 +104,10 @@ function generateReceipt(doc: jsPDF, pago: any) {
 
   doc.setFontSize(10)
   doc.setTextColor(100, 100, 100)
-  doc.text("Raul Oscar Morales", margin, margin + 35)
-  doc.text("Coronel Zelaya 1102, San Miguel de Tucumán", margin, margin + 40)
-  doc.text("Tel: +549 381 672-4512", margin, margin + 45)
-  doc.text("Email: raulmorales@gmail.com", margin, margin + 50)
+  doc.text(configuracion.perfil.nombre + " " + configuracion.perfil.apellido, margin, margin + 35)
+  doc.text(configuracion.perfil.direccion, margin, margin + 40)
+  doc.text("Tel: " + configuracion.perfil.telefono, margin, margin + 45)
+  doc.text("Email: " + configuracion.perfil.email, margin, margin + 50)
 
   doc.setFontSize(12)
   doc.setTextColor(secondaryColor)
@@ -150,12 +165,12 @@ function generateReceipt(doc: jsPDF, pago: any) {
   if (pago.estado === "Pendiente") {
     doc.setTextColor(200, 50, 50)
     doc.setFontSize(60)
-    doc.setGState( doc.GState({ opacity: 0.2 }))
+    doc.setGState(doc.GState({ opacity: 0.2 }))
     doc.text("PENDIENTE", pageWidth / 2, pageHeight / 2, {
       align: "center",
       angle: 45,
     })
-    doc.setGState( doc.GState({ opacity: 1.0 }))
+    doc.setGState(doc.GState({ opacity: 1.0 }))
   }
 
   // Tabla de resumen

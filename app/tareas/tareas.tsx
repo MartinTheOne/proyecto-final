@@ -153,9 +153,37 @@ export default function TareasPage({ InitialTareas }: props) {
     }
   }
 
-  const handleDeleteTarea = () => {
+  const handleDeleteTarea = async () => {
     if (!currentTarea) return;
-    setTareas(tareas.filter((tarea) => tarea._id !== currentTarea._id))
+
+    try {
+      const response = await fetch("/api/tareas", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: currentTarea._id,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al eliminar el cliente: ${response.statusText}`)
+      }
+
+      setTareas(tareas.filter((t) => t._id !== currentTarea._id))
+
+      toast({
+        title: "Tarea eliminada",
+        description: "La tarea ha sido eliminado exitosamente.",
+      })
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: "Hubo un error al eliminar la tarea.",
+      })
+    }
   }
 
   const handleCompletarTarea = (id: String) => {
@@ -350,7 +378,13 @@ export default function TareasPage({ InitialTareas }: props) {
         clientes={clientes}
         open={openCreateDialog}
         onOpenChange={setOpenCreateDialog}
-        onSubmit={handleCreateTarea}
+        onSubmit={(values) => {
+          const tareaData: Omit<Tareas, "_id"> = {
+            ...values,
+            descripcion: values.descripcion ?? ""
+          };
+          return handleCreateTarea(tareaData);
+        }}
         title="Nueva Tarea"
         description="Agregue una nueva tarea a su sistema"
         buttonText="Crear Tarea"
