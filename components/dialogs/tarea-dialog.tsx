@@ -181,7 +181,7 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
                 control={form.control}
                 name="fechaLimite"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem className="flex flex-col mt-[10px]">
                     <FormLabel>Fecha Límite</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>

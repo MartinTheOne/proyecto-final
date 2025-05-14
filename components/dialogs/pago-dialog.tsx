@@ -21,23 +21,12 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { useEffect } from "react"
+import type { Pago } from "@/interfaces/Ipago"
+import { Cliente } from "@/interfaces/Icliente"
 
 // Datos de ejemplo para los selects
-const clientes = [
-  { id: "1", nombre: "Juan Pérez" },
-  { id: "2", nombre: "María López" },
-  { id: "3", nombre: "Carlos Rodríguez" },
-  { id: "4", nombre: "Ana Martínez" },
-  { id: "5", nombre: "Roberto Sánchez" },
-]
 
-const casos = [
-  { id: "1", titulo: "Reclamación laboral" },
-  { id: "2", titulo: "Divorcio" },
-  { id: "3", titulo: "Herencia" },
-  { id: "4", titulo: "Reclamación de seguro" },
-  { id: "5", titulo: "Disputa contractual" },
-]
 
 const metodosPago = [
   "Efectivo",
@@ -51,9 +40,9 @@ const metodosPago = [
 
 // Esquema de validación para el formulario de pago
 const pagoSchema = z.object({
-  clienteId: z.string({ required_error: "Seleccione un cliente" }),
-  casoId: z.string({ required_error: "Seleccione un caso" }),
-  monto: z.string().min(1, { message: "Ingrese un monto válido" }),
+  cliente: z.string({ required_error: "El cliente es requerido" }),
+  caso: z.string({ required_error: "El caso es requerido" }),
+  monto: z.coerce.number().min(0.01, { message: "Ingrese un monto válido mayor a 0" }),
   fecha: z.date({ required_error: "Seleccione una fecha" }),
   metodo: z.string({ required_error: "Seleccione un método de pago" }),
   estado: z.enum(["Pendiente", "Completado", "Cancelado"]),
@@ -66,42 +55,64 @@ type PagoFormValues = z.infer<typeof pagoSchema>
 interface PagoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  pago?: {
-    id?: number
-    clienteId?: string
-    casoId?: string
-    monto?: string
-    fecha?: Date
-    metodo?: string
-    estado?: string
-    comprobante?: string
-    notas?: string
-  }
-  onSubmit: (values: PagoFormValues) => void
+  pago?: Pago | null
+  onSubmit: (values: Omit<Pago, "_id">) => void
   title: string
   description: string
   buttonText: string
+  clientes: Cliente[]
 }
 
-export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, description, buttonText }: PagoDialogProps) {
+export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, description, buttonText, clientes }: PagoDialogProps) {
   const form = useForm<PagoFormValues>({
     resolver: zodResolver(pagoSchema),
     defaultValues: {
-      clienteId: pago?.clienteId || "",
-      casoId: pago?.casoId || "",
-      monto: pago?.monto || "",
-      fecha: pago?.fecha || new Date(),
-      metodo: pago?.metodo || "",
-      estado: (pago?.estado as "Pendiente" | "Completado" | "Cancelado") || "Pendiente",
-      comprobante: pago?.comprobante || "",
-      notas: pago?.notas || "",
+      cliente: "",
+      caso: "",
+      monto: 0,
+      fecha: new Date(),
+      metodo: "",
+      estado: "Pendiente",
+      comprobante: "",
+      notas: "",
     },
   })
 
+  // Actualizar el formulario cuando cambia el pago seleccionado
+  useEffect(() => {
+    if (pago) {
+      form.reset({
+        cliente: pago.cliente || "",
+        caso: pago.caso || "",
+        monto: pago.monto || 0,
+        fecha: pago.fecha ? new Date(pago.fecha) : new Date(),
+        metodo: pago.metodo || "",
+        estado: (pago.estado as "Pendiente" | "Completado" | "Cancelado") || "Pendiente",
+        comprobante: pago.comprobante || "",
+        notas: pago.notas || "",
+      })
+    } else {
+      form.reset({
+        cliente: "",
+        caso: "",
+        monto: 0,
+        fecha: new Date(),
+        metodo: "",
+        estado: "Pendiente",
+        comprobante: "",
+        notas: "",
+      })
+    }
+  }, [pago, form])
+
   function handleSubmit(values: PagoFormValues) {
-    onSubmit(values)
+    // Convertir la fecha a string en formato ISO
+    const formattedValues = {
+      ...values,
+      fecha: values.fecha.toISOString().split("T")[0], // Formato YYYY-MM-DD
+    }
+    onSubmit(formattedValues)
     onOpenChange(false)
-    form.reset()
   }
 
   return (
@@ -113,47 +124,23 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols gap-8">
               <FormField
                 control={form.control}
-                name="clienteId"
+                name="cliente"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un cliente" />
+                          <SelectValue placeholder="Seleccione un Cliente" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {clientes.map((cliente) => (
-                          <SelectItem key={cliente.id} value={cliente.id}>
-                            {cliente.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="casoId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Caso</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione un caso" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {casos.map((caso) => (
-                          <SelectItem key={caso.id} value={caso.id}>
-                            {caso.titulo}
+                        {clientes.map((c) => (
+                          <SelectItem key={c._id} value={c.nombre}>
+                            {c.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -163,17 +150,41 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="caso"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Caso</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Caso asociado" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="monto"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Monto</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <span className="absolute left-3 top-2.5">$</span>
-                        <Input type="number" step="0.01" min="0" className="pl-6" placeholder="0.00" {...field} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          className="pl-6 "
+                          placeholder="0.00"
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value === "" ? "" : e.target.value
+                            field.onChange(value)
+                          }}
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />

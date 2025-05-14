@@ -1,6 +1,6 @@
 "use client"
 
-import {  useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -31,7 +31,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
     const { startLoading, stopLoading } = useLoading()
 
     // Cargar clientes al montar el componente
-   
+
 
     // Filtrar clientes según el término de búsqueda
     const filteredClientes = clientes.filter(
@@ -242,10 +242,10 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                                             <TableCell>
                                                 <span
                                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cliente.estado === "Activo"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : cliente.estado === "En espera"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-gray-100 text-gray-800"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : cliente.estado === "En espera"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-gray-100 text-gray-800"
                                                         }`}
                                                 >
                                                     {cliente.estado}
@@ -295,7 +295,14 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
             <ClienteDialog
                 open={openCreateDialog}
                 onOpenChange={setOpenCreateDialog}
-                onSubmit={handleCreateCliente}
+                onSubmit={(values) => {
+                    const clienteData: Omit<Cliente, "_id"> = {
+                        ...values,
+                        direccion: values.direccion ?? '',
+                        notas: values.notas ?? '',
+                    };
+                    return handleCreateCliente(clienteData);
+                }}
                 title="Nuevo Cliente"
                 description="Agregue un nuevo cliente a su sistema"
                 buttonText="Crear Cliente"
@@ -306,7 +313,14 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                 open={openEditDialog}
                 onOpenChange={setOpenEditDialog}
                 cliente={currentCliente}
-                onSubmit={handleEditCliente}
+                onSubmit={(values) => {
+                    const clienteData: Omit<Cliente, "_id"> = {
+                        ...values,
+                        direccion: values.direccion ?? '',
+                        notas: values.notas ?? '',
+                    };
+                    return handleEditCliente(clienteData);
+                }}
                 title="Editar Cliente"
                 description="Modifique la información del cliente"
                 buttonText="Guardar Cambios"
