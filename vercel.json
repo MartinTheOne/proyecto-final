@@ -1,8 +1,7 @@
 {
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--openssl-legacy-provider"
-    }
+  "env": {
+    "NODE_OPTIONS": "--openssl-legacy-provider"
   },
-  "installCommand": "pnpm approve-builds && pnpm install"
+  "installCommand": "pnpm approve-builds && pnpm install",
+  "buildCommand": "pnpm install --ignore-scripts=false && pnpm run build"
 }
