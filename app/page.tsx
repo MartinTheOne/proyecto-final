@@ -6,7 +6,7 @@ import { differenceInDays, isToday, isTomorrow } from "date-fns"
 
 async function getDashboardData() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/dashboard`, {
+    const res = await fetch(`${process.env.NEXTAUTH_URL || ""}/api/dashboard`, {
       cache: "no-store",
     })
 
