@@ -1,4 +1,0 @@
-{
-  "installCommand": "pnpm approve-builds && pnpm install",
-  "buildCommand": "pnpm install --ignore-scripts=false && pnpm run build"
-}
