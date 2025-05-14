@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,14 +15,13 @@ import { useRouter } from "next/navigation"
 import { useLoading } from "@/components/loading-provider"
 import type { Pago } from "@/interfaces/Ipago"
 import { Cliente } from "@/interfaces/Icliente"
+import { Casos } from "@/interfaces/ICasos"
 
 interface PagosPageProps {
   pagos: Pago[]
-  clientes:Cliente[]
 }
 
-export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}: PagosPageProps) {
-  const router = useRouter()
+export default function PagosPage({ pagos: pagosinitial }: PagosPageProps) {
   const { startLoading, stopLoading } = useLoading()
   const [pagos, setPagos] = useState<Pago[]>(pagosinitial)
   const [searchTerm, setSearchTerm] = useState("")
@@ -34,6 +33,53 @@ export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}:
   const [isDownloading, setIsDownloading] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [casos, setCasos] = useState<Casos[]>([])
+
+  useEffect(() => {
+    const getClientes = async () => {
+      const dateLocal = localStorage.getItem("clientes");
+      if (dateLocal) {
+        const data = JSON.parse(dateLocal);
+        setClientes(data);
+      }
+      else {
+        try {
+          const response = await fetch(`/api/clientes`)
+          if (!response.ok) {
+            throw new Error('Error al obtener los clientes')
+          }
+          const data = await response.json()
+          setClientes(data)
+          localStorage.setItem("clientes", JSON.stringify(data));
+        } catch (error) {
+          console.error("Error al obtener los clientes:", error)
+        }
+      }
+    }
+    const getCasos = async () => {
+      const dateLocal = localStorage.getItem("casos");
+      if (dateLocal) {
+        const data = JSON.parse(dateLocal);
+        setCasos(data);
+      }
+      else {
+        try {
+          const response = await fetch(`/api/casos`)
+          if (!response.ok) {
+            throw new Error('Error al obtener los clientes')
+          }
+          const data = await response.json()
+          setCasos(data)
+          localStorage.setItem("casos", JSON.stringify(data));
+        } catch (error) {
+          console.error("Error al obtener los clientes:", error)
+        }
+      }
+    }
+    getClientes()
+    getCasos()
+  }, [pagosinitial])
 
 
   // Filtrar pagos según el término de búsqueda y el filtro de estado
@@ -106,9 +152,9 @@ export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}:
         pagos.map((pago) =>
           pago._id === currentPago._id
             ? {
-                ...pago,
-                ...values,
-              }
+              ...pago,
+              ...values,
+            }
             : pago,
         ),
       )
@@ -387,11 +433,10 @@ export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}:
                       <TableCell>{pago.metodo}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            pago.estado === "Completado"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${pago.estado === "Completado"
                               ? "bg-green-100 text-green-800"
                               : "bg-yellow-100 text-yellow-800"
-                          }`}
+                            }`}
                         >
                           {pago.estado}
                         </span>
@@ -452,7 +497,8 @@ export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}:
         open={openCreateDialog}
         onOpenChange={setOpenCreateDialog}
         onSubmit={handleCreatePago}
-        clientes={clientesInitial}
+        clientes={clientes}
+        casos={casos}
         title="Registrar Pago"
         description="Agregue un nuevo pago al sistema"
         buttonText="Registrar Pago"
@@ -463,7 +509,8 @@ export default function PagosPage({pagos:pagosinitial,clientes:clientesInitial}:
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         pago={currentPago}
-        clientes={clientesInitial}
+        clientes={clientes}
+        casos={casos}
         onSubmit={handleEditPago}
         title="Editar Pago"
         description="Modifique la información del pago"

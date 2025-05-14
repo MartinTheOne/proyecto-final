@@ -36,3 +36,27 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Error al crear el caso' }, { status: 500 });
     }
 }
+
+
+export async function PUT(req: Request) {
+    try {
+        const collection = await connectToDatabase();
+        const { id, ...casos }: Partial<Casos> & { id: string } = await req.json();
+        const result = await collection.updateOne({ _id: new ObjectId(id) as any }, { $set: casos });
+        return NextResponse.json({ modifiedCount: result.modifiedCount });
+    } catch (error) {
+        return NextResponse.json({ error: 'Error al actualizar el caso' }, { status: 500 });
+    }
+}
+
+// DELETE: Eliminar un cliente por ID
+export async function DELETE(req: Request) {
+    try {
+        const collection = await connectToDatabase();
+        const { id }: { id: string } = await req.json();
+        const result = await collection.deleteOne({ _id: new ObjectId(id) as any });
+        return NextResponse.json({ deletedCount: result.deletedCount });
+    } catch (error) {
+        return NextResponse.json({ error: 'Error al eliminar el caso' }, { status: 500 });
+    }
+}

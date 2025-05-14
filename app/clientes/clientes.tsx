@@ -67,11 +67,11 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
             }
 
             setClientes([...clientes, newCliente])
-
             toast({
                 title: "Cliente creado",
                 description: "El cliente ha sido creado exitosamente.",
             })
+            localStorage.removeItem("clientes")
         } catch (error) {
             console.error("Error al crear el cliente:", error)
             toast({
@@ -120,6 +120,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                 title: "Cliente actualizado",
                 description: "El cliente ha sido actualizado exitosamente.",
             })
+            localStorage.removeItem("clientes")
         } catch (error) {
             console.error("Error al actualizar el cliente:", error)
             toast({
@@ -158,6 +159,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                 title: "Cliente eliminado",
                 description: "El cliente ha sido eliminado exitosamente.",
             })
+            localStorage.removeItem("clientes")
         } catch (error) {
             console.error("Error al eliminar el cliente:", error)
             toast({

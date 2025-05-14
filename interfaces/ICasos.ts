@@ -1,5 +1,7 @@
 export interface Casos{
     _id: string;
+    descripcion:string;
+    notas:string;
     titulo: string;
     cliente: string;
     tipo:string;

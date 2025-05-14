@@ -24,6 +24,7 @@ import { es } from "date-fns/locale"
 import { useEffect } from "react"
 import type { Pago } from "@/interfaces/Ipago"
 import { Cliente } from "@/interfaces/Icliente"
+import { Casos } from "@/interfaces/ICasos"
 
 // Datos de ejemplo para los selects
 
@@ -61,9 +62,10 @@ interface PagoDialogProps {
   description: string
   buttonText: string
   clientes: Cliente[]
+  casos: Casos[]
 }
 
-export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, description, buttonText, clientes }: PagoDialogProps) {
+export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, description, buttonText, clientes, casos }: PagoDialogProps) {
   const form = useForm<PagoFormValues>({
     resolver: zodResolver(pagoSchema),
     defaultValues: {
@@ -152,13 +154,24 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
             </div>
             <FormField
               control={form.control}
-              name="caso"
+              name="cliente"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Caso</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Caso asociado" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un Caso  " />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {casos.map((c) => (
+                        <SelectItem key={c._id} value={c.titulo}>
+                          {c.titulo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

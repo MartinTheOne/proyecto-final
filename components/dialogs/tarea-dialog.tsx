@@ -23,25 +23,19 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Cliente } from "@/interfaces/Icliente"
+import { Casos } from "@/interfaces/ICasos"
 
 
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 
-const casos = [
-  { id: "1", titulo: "Reclamación laboral" },
-  { id: "2", titulo: "Divorcio" },
-  { id: "3", titulo: "Herencia" },
-  { id: "4", titulo: "Reclamación de seguro" },
-  { id: "5", titulo: "Disputa contractual" },
-]
 
 // Esquema de validación para el formulario de tarea
 const tareaSchema = z.object({
   titulo: z.string().min(2, { message: "El título debe tener al menos 2 caracteres" }),
   descripcion: z.string().optional(),
-  clienteId: z.string({ required_error: "Seleccione un cliente" }),
-  casoId: z.string({ required_error: "Seleccione un caso" }),
+  cliente: z.string({ required_error: "Seleccione un cliente" }),
+  caso: z.string({ required_error: "Seleccione un caso" }),
   fechaLimite: z.date({ required_error: "Seleccione una fecha límite" }),
   prioridad: z.enum(["Alta", "Media", "Baja"]),
   estado: z.enum(["Pendiente", "En progreso", "Completada"]),
@@ -53,11 +47,11 @@ interface TareaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   tarea?: {
-    id?: number
+    _id?: number
     titulo?: string
     descripcion?: string
-    clienteId?: string
-    casoId?: string
+    cliente?: string
+    caso?: string
     fechaLimite?: Date
     prioridad?: string
     estado?: string
@@ -66,20 +60,23 @@ interface TareaDialogProps {
   title: string
   description: string
   buttonText: string
+  casos: Casos[]
+  clientes: Cliente[]
+
 }
 
-export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, description, buttonText }: TareaDialogProps) {
-  const [clientes, setClientes] = useState<Cliente[]>([])
+export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, description, buttonText, casos, clientes }: TareaDialogProps) {
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   const form = useForm<TareaFormValues>({
     resolver: zodResolver(tareaSchema),
     defaultValues: {
       titulo: tarea?.titulo || "",
       descripcion: tarea?.descripcion || "",
-      clienteId: tarea?.clienteId || "",
-      casoId: tarea?.casoId || "",
+      cliente: tarea?.cliente || "",
+      caso: tarea?.caso || "",
       fechaLimite: tarea?.fechaLimite || new Date(),
       prioridad: (tarea?.prioridad as "Alta" | "Media" | "Baja") || "Media",
       estado: (tarea?.estado as "Pendiente" | "En progreso" | "Completada") || "Pendiente",
@@ -92,25 +89,19 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
     form.reset()
   }
 
-
-useEffect(()=>{
-  const getClientes = async ()=>{
-    try {
-      const response = await fetch(`${baseUrl}/api/clientes`)
-      if (!response.ok) {
-        throw new Error('Error al obtener los clientes')
-      }
-      const data = await response.json()
-      console.log(data)
-      setClientes(data)
-    } catch (error) {
-      
+  useEffect(() => {
+    if (tarea) {
+      form.reset({
+        titulo: tarea.titulo || "",
+        descripcion: tarea.descripcion || "",
+        cliente: tarea.cliente || "",
+        caso: tarea.caso || "",
+        fechaLimite: tarea.fechaLimite ? new Date(tarea.fechaLimite) : new Date(),
+        prioridad: (tarea.prioridad as "Alta" | "Media" | "Baja") || "Media",
+        estado: (tarea.estado as "Pendiente" | "En progreso" | "Completada") || "Pendiente",
+      })
     }
-  }
-  getClientes()
-},[])
-
-
+  }, [tarea, form])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,7 +132,7 @@ useEffect(()=>{
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Descripción detallada de la tarea" {...field} />
+                    <Textarea placeholder="Descripción detallada de la tarea"{...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,11 +141,11 @@ useEffect(()=>{
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="clienteId"
+                name="cliente"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} {...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione un cliente" />
@@ -162,7 +153,7 @@ useEffect(()=>{
                       </FormControl>
                       <SelectContent>
                         {clientes.map((cliente) => (
-                          <SelectItem key={cliente._id} value={cliente._id}>
+                          <SelectItem key={cliente._id} value={cliente.nombre}>
                             {cliente.nombre}
                           </SelectItem>
                         ))}
@@ -174,11 +165,11 @@ useEffect(()=>{
               />
               <FormField
                 control={form.control}
-                name="casoId"
+                name="caso"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Caso</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} {...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione un caso" />
@@ -186,7 +177,7 @@ useEffect(()=>{
                       </FormControl>
                       <SelectContent>
                         {casos.map((caso) => (
-                          <SelectItem key={caso.id} value={caso.id}>
+                          <SelectItem key={caso._id} value={caso.titulo}>
                             {caso.titulo}
                           </SelectItem>
                         ))}
@@ -234,7 +225,7 @@ useEffect(()=>{
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Prioridad</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange}{...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione prioridad" />
@@ -256,7 +247,7 @@ useEffect(()=>{
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} {...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione estado" />

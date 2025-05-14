@@ -1,5 +1,5 @@
 "use client"
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -21,8 +21,9 @@ import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import {Cliente} from '@/interfaces/Icliente'
+import { da, es } from "date-fns/locale"
+import { Cliente } from '@/interfaces/Icliente'
+import type { Casos } from '@/interfaces/ICasos'
 
 
 
@@ -42,7 +43,7 @@ const tiposCaso = [
 const casoSchema = z.object({
   titulo: z.string().min(2, { message: "El título debe tener al menos 2 caracteres" }),
   descripcion: z.string().optional(),
-  clienteId: z.string({ required_error: "Seleccione un cliente" }),
+  cliente: z.string({ required_error: "Seleccione un cliente" }),
   tipo: z.string({ required_error: "Seleccione un tipo de caso" }),
   fechaInicio: z.date({ required_error: "Seleccione una fecha de inicio" }),
   fechaFin: z.date().optional().nullable(),
@@ -55,17 +56,7 @@ type CasoFormValues = z.infer<typeof casoSchema>
 interface CasoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  caso?: {
-    id?: number
-    titulo?: string
-    descripcion?: string
-    clienteId?: string
-    tipo?: string
-    fechaInicio?: Date
-    fechaFin?: Date | null
-    estado?: string
-    notas?: string
-  }
+  caso?: Casos | null
   onSubmit: (values: CasoFormValues) => void
   title: string
   description: string
@@ -79,7 +70,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
     defaultValues: {
       titulo: caso?.titulo || "",
       descripcion: caso?.descripcion || "",
-      clienteId: caso?.clienteId || "",
+      cliente: caso?.cliente || "",
       tipo: caso?.tipo || "",
       fechaInicio: caso?.fechaInicio || new Date(),
       fechaFin: caso?.fechaFin || null,
@@ -88,6 +79,21 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
     },
   })
 
+  useEffect(() => {
+    if (caso) {
+      form.reset({
+        titulo: caso.titulo || "",
+        descripcion: caso.descripcion || "",
+        cliente: caso.cliente || "",
+        tipo: caso.tipo || "",
+        fechaInicio: caso.fechaInicio ? new Date(caso.fechaInicio) : new Date(),
+        fechaFin: caso.fechaFin ? new Date(caso.fechaFin) : null,
+        estado: (caso.estado as "En proceso" | "En espera" | "Cerrado") || "En proceso",
+        notas: caso.notas || "",
+      })
+    }
+  }, [caso, form])
+
   function handleSubmit(values: CasoFormValues) {
     onSubmit(values)
     onOpenChange(false)
@@ -95,23 +101,30 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
   }
 
 
-  useEffect(()=>{
-    const getClientes = async ()=>{
-      try{
-        const response = await fetch('http://localhost:3000/api/clientes')
-        const data = await response.json()
-        if (response.ok) {
-          setClientes(data)
-        } else {
-          console.error("Error fetching clientes:", data)
+  useEffect(() => {
+    const getClientes = async () => {
+      const dataLocal = localStorage.getItem("clientes")
+      if (dataLocal) {
+        const data = JSON.parse(dataLocal);
+        setClientes(data);
+      } else {
+
+        try {
+          const response = await fetch('/api/clientes')
+          const data = await response.json()
+          if (response.ok) {
+            setClientes(data)
+            localStorage.setItem("clientes", JSON.stringify(data))
+          } else {
+            console.error("Error fetching clientes:", data)
+          }
+        } catch (ex) {
+          console.log(ex)
         }
-      }catch(ex){
-        console.log(ex)
       }
     }
     getClientes()
-  } 
-  ,[])
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,7 +142,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                 <FormItem>
                   <FormLabel>Título</FormLabel>
                   <FormControl>
-                    <Input placeholder={caso?.titulo} {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,7 +155,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea placeholder={caso?.descripcion||"Escriba una descipcion"} {...field} />
+                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,11 +164,11 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="clienteId"
+                name="cliente"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} {...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione un cliente" />
@@ -163,7 +176,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                       </FormControl>
                       <SelectContent>
                         {clientes.map((cliente) => (
-                          <SelectItem key={cliente._id} value={cliente._id}>
+                          <SelectItem key={cliente._id} value={cliente.nombre}>
                             {cliente.nombre}
                           </SelectItem>
                         ))}
@@ -179,7 +192,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Caso</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} {...field}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione un tipo" />
@@ -271,7 +284,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange}{...field}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione un estado" />
@@ -294,7 +307,7 @@ export function CasoDialog({ open, onOpenChange, caso, onSubmit, title, descript
                 <FormItem>
                   <FormLabel>Notas adicionales</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Notas adicionales sobre el caso" {...field} />
+                    <Textarea placeholder="Notas adicionales sobre el caso"{...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

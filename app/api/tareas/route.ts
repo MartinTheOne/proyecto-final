@@ -22,41 +22,7 @@ export async function GET(req: NextRequest) {
   try {
     const collection = await connectToDatabase();
 
-    const tareas = await collection.aggregate([
-      {
-        $lookup: {
-          from: 'clientes',
-          localField: 'clienteId',
-          foreignField: '_id',
-          as: 'cliente'
-        }
-      },
-      {
-        $unwind: '$cliente'
-      },
-      {
-        $lookup: {
-          from: 'casos',
-          localField: 'casoId',
-          foreignField: '_id',
-          as: 'caso'
-        }
-      },
-      {
-        $unwind: '$caso'
-      },
-      {
-        $project: {
-          _id: 1,
-          tipo: 1,
-          fechaInicio: 1,
-          fechaFin: 1,
-          estado: 1,
-          'cliente.nombre': 1,
-          'caso.titulo': 1
-        }
-      }
-    ]).toArray();
+    const tareas = await collection.find({}).toArray();
 
     return NextResponse.json(tareas);
   } catch (error) {

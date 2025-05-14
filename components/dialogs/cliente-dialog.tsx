@@ -136,7 +136,7 @@
                     <FormItem>
                       <FormLabel>Teléfono</FormLabel>
                       <FormControl>
-                        <Input placeholder="555-123-4567" {...field} />
+                        <Input placeholder="+543818725612" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

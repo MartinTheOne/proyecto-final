@@ -11,22 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CasoDialog } from "@/components/dialogs/caso-dialog"
 import { DeleteDialog } from "@/components/dialogs/delete-dialog"
 import { Casos } from "@/interfaces/ICasos"
+import { toast } from "@/components/ui/use-toast"
 
 
-interface props{
-    InitialData:Casos[]
+interface props {
+  InitialData: Casos[]
 }
 
 
 
-export default function CasosPage({InitialData}:props) {
+export default function CasosPage({ InitialData }: props) {
   const [casos, setCasos] = useState<Casos[]>(InitialData)
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroEstado, setFiltroEstado] = useState("todos")
   const [openCreateDialog, setOpenCreateDialog] = useState(false)
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
-  const [currentCaso, setCurrentCaso] = useState<any>(null)
+  const [currentCaso, setCurrentCaso] = useState<Casos|null>(null)
 
   // Filtrar casos según el término de búsqueda y el filtro de estado
   const filteredCasos = casos.filter(
@@ -37,25 +38,124 @@ export default function CasosPage({InitialData}:props) {
       (filtroEstado === "todos" || caso.estado.toLowerCase() === filtroEstado.toLowerCase()),
   )
 
- 
-    const handleCreateCaso = async (caso: Casos) => {
-        const response = await fetch('http://localhost:3000/api/casos', {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify(caso),
-        })
-        const data = await response.json()
-        setCasos((prev) => [...prev, data])
+
+  const handleCreateCaso = async (values: Omit<Casos, "_id">) => {
+    try {
+      const response = await fetch('/api/casos', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      })
+      const insertedId = await response.json()
+      const newCaso: Casos = {
+        _id: insertedId,
+        ...values
+      }
+      setCasos([...casos, newCaso])
+
+      toast({
+        title: "Caso creado",
+        description: "El caso ha sido creado exitosamente",
+      })
+      localStorage.removeItem("casos")
+
+    } catch (error) {
+      console.error("Error al crear el caso:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo crear el caso. Por favor, intente de nuevo.",
+        variant: "destructive"
+      })
     }
 
-
-
-  const handleDeleteCaso = () => {
-    setCasos(casos.filter((caso) => caso._id !== currentCaso.id))
   }
 
+  const handleEditCaso = async (values: Omit<Casos, "_id">) => {
+    if (!currentCaso || !currentCaso._id) return
+
+    try {
+      const response = await fetch("/api/casos", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: currentCaso._id,
+          ...values,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al actualizar el cliente: ${response.statusText}`)
+      }
+
+      setCasos(
+        casos.map((caso) =>
+          caso._id === currentCaso._id
+            ? {
+              ...caso,
+              ...values,
+            }
+            : caso,
+        ),
+      )
+
+      toast({
+        title: "Caso actualizado",
+        description: "El Caso ha sido actualizado exitosamente.",
+      })
+      localStorage.removeItem("casos")
+    } catch (error) {
+      console.error("Error al actualizar el cliente:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el caso. Por favor, intente de nuevo.",
+        variant: "destructive",
+      })
+    } finally {
+    }
+  }
+
+
+  const handleDeleteCaso = async () => {
+    if (!currentCaso || !currentCaso._id) return
+
+    try {
+
+      const response = await fetch("/api/casos", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: currentCaso._id,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al eliminar el cliente: ${response.statusText}`)
+      }
+
+      // Eliminar el cliente de la lista local
+      setCasos(casos.filter((caso) => caso._id !== currentCaso._id))
+
+      toast({
+        title: "Caso eliminado",
+        description: "El caso ha sido eliminado exitosamente.",
+      })
+      localStorage.removeItem("casos")
+    } catch (error) {
+      console.error("Error al eliminar el caso:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el caso. Por favor, intente de nuevo.",
+        variant: "destructive",
+      })
+    } finally {
+    }
+  }
   // Contadores para las tarjetas de resumen
   const casosActivos = casos.filter((caso) => caso.estado === "En proceso").length
   const casosCerrados = casos.filter((caso) => caso.estado === "Cerrado").length
@@ -152,65 +252,72 @@ export default function CasosPage({InitialData}:props) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredCasos.map((caso) => (
-                    <TableRow key={caso._id}>
-                      <TableCell className="font-medium">{caso.titulo}</TableCell>
-                      <TableCell>{caso.cliente}</TableCell>
-                      <TableCell>{caso.tipo}</TableCell>
-                      <TableCell>{caso.fechaInicio instanceof Date ? caso.fechaInicio.toLocaleDateString() : caso.fechaInicio}</TableCell>
-                      <TableCell>
-                        {caso.fechaFin
-                          ? (caso.fechaFin instanceof Date
-                              ? caso.fechaFin.toLocaleDateString()
-                              : caso.fechaFin)
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            caso.estado === "En proceso" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {caso.estado}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menú</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <FileText className="mr-2 h-4 w-4" />
-                              <span>Ver detalles</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setCurrentCaso(caso)
-                                setOpenEditDialog(true)
-                              }}
-                            >
-                              <FileEdit className="mr-2 h-4 w-4" />
-                              <span>Editar</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => {
-                                setCurrentCaso(caso)
-                                setOpenDeleteDialog(true)
-                              }}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Eliminar</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredCasos.map((caso) => {
+                    const fechaInicio = new Date(caso.fechaInicio)
+                    const formateadaInicio = `${fechaInicio.getFullYear()}/${(fechaInicio.getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")}/${fechaInicio.getDate().toString().padStart(2, "0")}`;
+
+                    const fechaFin = new Date(caso.fechaFin)
+                    const formateadaFin = `${fechaFin.getFullYear()}/${(fechaFin.getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")}/${fechaFin.getDate().toString().padStart(2, "0")}`;
+                    return (
+
+                      <TableRow key={caso._id}>
+                        <TableCell className="font-medium">{caso.titulo}</TableCell>
+                        <TableCell>{caso.cliente}</TableCell>
+                        <TableCell>{caso.tipo}</TableCell>
+                        <TableCell>{formateadaInicio ?? "-"}</TableCell>
+                        <TableCell>
+                          {formateadaFin ?? "-"}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${caso.estado === "En proceso" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+                              }`}
+                          >
+                            {caso.estado}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Abrir menú</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <FileText className="mr-2 h-4 w-4" />
+                                <span>Ver detalles</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setCurrentCaso(caso)
+                                  setOpenEditDialog(true)
+                                }}
+                              >
+                                <FileEdit className="mr-2 h-4 w-4" />
+                                <span>Editar</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => {
+                                  setCurrentCaso(caso)
+                                  setOpenDeleteDialog(true)
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Eliminar</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
                 )}
               </TableBody>
             </Table>
@@ -229,7 +336,7 @@ export default function CasosPage({InitialData}:props) {
       />
 
       {/* Diálogo para editar caso */}
-      {/* <CasoDialog
+      <CasoDialog
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         caso={currentCaso}
@@ -237,7 +344,7 @@ export default function CasosPage({InitialData}:props) {
         title="Editar Caso"
         description="Modifique la información del caso"
         buttonText="Guardar Cambios"
-      /> */}
+      />
 
       {/* Diálogo para eliminar caso */}
       <DeleteDialog
