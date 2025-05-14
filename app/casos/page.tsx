@@ -1,6 +1,6 @@
 import CasosPage from './casos'
 export default async function Casos(){
-  const res = await fetch('http://localhost:3000/api/casos/', { cache: 'no-store' });
+  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/casos/`, { cache: 'no-store' });
 
   if (!res.ok) {
     console.error('Falló el fetch con status:', res.status);
