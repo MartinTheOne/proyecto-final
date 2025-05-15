@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getTareas } from '@/lib/obtener'
 import TareasPage from './tareas'
 export default async function Tareas() {

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getClientes } from "@/lib/obtener"
 import ClientesPage from "./clientes"
 export default async function Clientes() {

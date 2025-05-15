@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getConfiguracion } from "@/lib/obtener";
 import ConfiguracionPage from "./configuracion";
 

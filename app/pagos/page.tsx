@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getPagos } from "@/lib/obtener";
 import PagosPage from "./pagos";
 
