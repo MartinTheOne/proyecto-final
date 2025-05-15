@@ -307,7 +307,7 @@ export default function PagosPage({ pagos: pagosinitial }: PagosPageProps) {
     }
   }
 
-  const porcentajeMetodoMasUsado = pagos.length > 0 ? Math.round((maxCount / pagos.length) * 100) : 0
+  const porcentajeMetodoMasUsado = filteredPagos.length > 0 ? Math.round((maxCount / filteredPagos.length) * 100) : 0
 
   return (
     <div className="flex flex-col p-4 md:p-8 space-y-6">
