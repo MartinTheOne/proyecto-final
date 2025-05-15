@@ -191,7 +191,7 @@ export default function CasosPage({ InitialData }: props) {
             <CardTitle className="text-sm font-medium">Tiempo Promedio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3.5 meses</div>
+            <div className="text-2xl font-bold">2.5 meses</div>
             <p className="text-xs text-muted-foreground">Para resolución de casos</p>
           </CardContent>
         </Card>
@@ -289,10 +289,6 @@ export default function CasosPage({ InitialData }: props) {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <FileText className="mr-2 h-4 w-4" />
-                                <span>Ver detalles</span>
-                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
                                   setCurrentCaso(caso)

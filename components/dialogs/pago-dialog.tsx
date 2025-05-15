@@ -25,6 +25,7 @@ import { useEffect } from "react"
 import type { Pago } from "@/interfaces/Ipago"
 import { Cliente } from "@/interfaces/Icliente"
 import { Casos } from "@/interfaces/ICasos"
+import { useState } from "react"
 
 // Datos de ejemplo para los selects
 
@@ -66,6 +67,7 @@ interface PagoDialogProps {
 }
 
 export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, description, buttonText, clientes, casos }: PagoDialogProps) {
+  const [casosClient, setCasosCliente] = useState<Casos[]>(casos);
   const form = useForm<PagoFormValues>({
     resolver: zodResolver(pagoSchema),
     defaultValues: {
@@ -80,7 +82,19 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
     },
   })
 
-  // Actualizar el formulario cuando cambia el pago seleccionado
+
+  const selectedCliente = form.watch("cliente")
+
+  useEffect(() => {
+    if (selectedCliente) {
+      const relacionados = casos.filter((c) => c.cliente === selectedCliente)
+      setCasosCliente(relacionados)
+    } else {
+      setCasosCliente([])
+      form.setValue("caso", "")
+    }
+  }, [selectedCliente, casos])
+
   useEffect(() => {
     if (pago) {
       form.reset({
@@ -93,6 +107,7 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
         comprobante: pago.comprobante || "",
         notas: pago.notas || "",
       })
+
     } else {
       form.reset({
         cliente: "",
@@ -155,27 +170,28 @@ export function PagoDialog({ open, onOpenChange, pago, onSubmit, title, descript
             <FormField
               control={form.control}
               name="caso"
-              render={({ field }) =>{
-                return(
-                <FormItem>
-                  <FormLabel>Caso</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un Caso" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {casos.map((c) => (
-                        <SelectItem key={c._id} value={c.titulo}>
-                          {c.titulo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}}
+              render={({ field }) => {
+                return (
+                  <FormItem>
+                    <FormLabel>Caso</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccione un Caso" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {casosClient.map((c) => (
+                          <SelectItem key={c._id} value={c.titulo}>
+                            {c.titulo}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField

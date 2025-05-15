@@ -56,7 +56,7 @@ interface TareaDialogProps {
 
 export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, description, buttonText, casos, clientes }: TareaDialogProps) {
 
-
+  const [casosClient,setCasosCliente]=useState<Casos[]>(casos)
   const form = useForm<TareaFormValues>({
     resolver: zodResolver(tareaSchema),
     defaultValues: {
@@ -75,6 +75,19 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
     onOpenChange(false)
     form.reset()
   }
+
+  const selectedCliente = form.watch("cliente")
+
+  useEffect(() => {
+    if (selectedCliente) {
+      const relacionados = casos.filter((c) => c.cliente === selectedCliente)
+      setCasosCliente(relacionados)
+    } else {
+      setCasosCliente([])
+      form.setValue("caso", "")
+    }
+  }, [selectedCliente, casos])
+
 
   useEffect(() => {
     if (tarea) {
@@ -154,17 +167,17 @@ export function TareaDialog({ open, onOpenChange, tarea, onSubmit, title, descri
                 control={form.control}
                 name="caso"
                 render={({ field }) => {
-                   return (
+                  return (
                     <FormItem>
                       <FormLabel>Caso</FormLabel>
-                      <Select onValueChange={field.onChange}defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccione un caso" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {casos.map((caso) => (
+                          {casosClient.map((caso) => (
                             <SelectItem key={caso._id} value={caso.titulo}>
                               {caso.titulo}
                             </SelectItem>

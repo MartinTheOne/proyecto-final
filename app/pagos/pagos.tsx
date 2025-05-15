@@ -284,16 +284,16 @@ export default function PagosPage({ pagos: pagosinitial }: PagosPageProps) {
   }
 
   // Cálculos para las tarjetas de resumen
-  const totalRecibido = pagos.filter((pago) => pago.estado === "Completado").reduce((sum, pago) => sum + pago.monto, 0)
+  const totalRecibido = filteredPagos.filter((pago) => pago.estado === "Completado").reduce((sum, pago) => sum + pago.monto, 0)
 
-  const totalPendiente = pagos.filter((pago) => pago.estado === "Pendiente").reduce((sum, pago) => sum + pago.monto, 0)
+  const totalPendiente = filteredPagos.filter((pago) => pago.estado === "Pendiente").reduce((sum, pago) => sum + pago.monto, 0)
 
-  const pagosPendientes = pagos.filter((pago) => pago.estado === "Pendiente").length
-  const pagosCompletados = pagos.filter((pago) => pago.estado === "Completado").length
+  const pagosPendientes = filteredPagos.filter((pago) => pago.estado === "Pendiente").length
+  const pagosCompletados = filteredPagos.filter((pago) => pago.estado === "Completado").length
 
   // Método de pago más usado
   const metodosCount: Record<string, number> = {}
-  pagos.forEach((pago) => {
+  filteredPagos.forEach((pago) => {
     metodosCount[pago.metodo] = (metodosCount[pago.metodo] || 0) + 1
   })
 
@@ -388,6 +388,7 @@ export default function PagosPage({ pagos: pagosinitial }: PagosPageProps) {
                 <SelectItem value="todos">Todos los estados</SelectItem>
                 <SelectItem value="completado">Completado</SelectItem>
                 <SelectItem value="pendiente">Pendiente</SelectItem>
+                <SelectItem value="cancelado">Cancelado</SelectItem>
               </SelectContent>
             </Select>
           </div>

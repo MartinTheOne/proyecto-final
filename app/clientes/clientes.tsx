@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { DeleteDialog } from "@/components/dialogs/delete-dialog"
 import type { Cliente } from "@/interfaces/Icliente"
 import { toast } from "@/components/ui/use-toast"
 import { useLoading } from "@/components/loading-provider"
+import { Casos } from "@/interfaces/ICasos"
 
 interface ClientesPageProps {
     initialClientes: Cliente[]
@@ -20,6 +21,7 @@ interface ClientesPageProps {
 export default function ClientesPage({ initialClientes }: ClientesPageProps) {
 
     const [clientes, setClientes] = useState<Cliente[]>(initialClientes)
+    const [casos, setCasos] = useState<Casos[]>([])
     const [searchTerm, setSearchTerm] = useState("")
     const [openCreateDialog, setOpenCreateDialog] = useState(false)
     const [openEditDialog, setOpenEditDialog] = useState(false)
@@ -30,6 +32,30 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
     const { startLoading, stopLoading } = useLoading()
 
     // Cargar clientes al montar el componente
+
+    useEffect(() => {
+        const getCasos = async () => {
+            const dateLocal = localStorage.getItem("casos");
+            if (dateLocal) {
+                const data = JSON.parse(dateLocal);
+                setCasos(data);
+            }
+            else {
+                try {
+                    const response = await fetch(`/api/casos`)
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los clientes')
+                    }
+                    const data = await response.json()
+                    setCasos(data)
+                    localStorage.setItem("casos", JSON.stringify(data));
+                } catch (error) {
+                    console.error("Error al obtener los clientes:", error)
+                }
+            }
+        }
+        getCasos()
+    }, [initialClientes])
 
 
     // Filtrar clientes según el término de búsqueda
@@ -209,7 +235,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                                     <TableHead>Nombre</TableHead>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Teléfono</TableHead>
-                                    <TableHead>Caso</TableHead>
+                                    <TableHead>Dirección</TableHead>
                                     <TableHead>Estado</TableHead>
                                     <TableHead className="w-[80px]">Acciones</TableHead>
                                 </TableRow>
@@ -239,7 +265,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
                                             <TableCell className="font-medium">{cliente.nombre}</TableCell>
                                             <TableCell>{cliente.email}</TableCell>
                                             <TableCell>{cliente.telefono}</TableCell>
-                                            <TableCell>{cliente.caso}</TableCell>
+                                            <TableCell>{cliente.direccion}</TableCell>
                                             <TableCell>
                                                 <span
                                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cliente.estado === "Activo"
@@ -294,6 +320,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
 
             {/* Diálogo para crear cliente */}
             <ClienteDialog
+                casos={casos}
                 open={openCreateDialog}
                 onOpenChange={setOpenCreateDialog}
                 onSubmit={(values) => {
@@ -311,6 +338,7 @@ export default function ClientesPage({ initialClientes }: ClientesPageProps) {
 
             {/* Diálogo para editar cliente */}
             <ClienteDialog
+                casos={casos}
                 open={openEditDialog}
                 onOpenChange={setOpenEditDialog}
                 cliente={currentCliente}
