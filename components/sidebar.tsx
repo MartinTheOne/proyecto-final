@@ -55,7 +55,7 @@ export function Sidebar() {
     <div className="hidden md:flex md:w-64 md:flex-col h-screen">
       <div className="flex flex-col flex-grow bg-[#001F3F] text-white">
         <div className="flex items-center h-16 px-4 border-b border-[#003366]">
-          <h1 className="text-xl font-semibold">LegalManager</h1>
+          <h1 className="text-xl font-semibold">Gestión Abogados</h1>
         </div>
         <div className="flex flex-col flex-1 overflow-y-auto">
           <nav className="flex-1 px-2 py-4 space-y-1">

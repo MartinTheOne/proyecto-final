@@ -12,7 +12,7 @@ import { LoadingProvider } from "@/components/loading-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "LegalManager - Gestión para Abogados",
+  title: "Gestión para Abogados",
   description: "Aplicación de gestión de clientes para abogados",
 }
 
@@ -31,7 +31,7 @@ export default function RootLayout({
               <div className="flex flex-col flex-1 overflow-hidden">
                 <header className="flex items-center h-16 px-4 border-b md:hidden">
                   <MobileSidebar />
-                  <h1 className="ml-2 text-xl font-semibold">LegalManager</h1>
+                  <h1 className="ml-2 text-xl font-semibold">Gestion para Abogados</h1>
                 </header>
                 <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 relative">
                   <LoadingProvider>{children}</LoadingProvider>

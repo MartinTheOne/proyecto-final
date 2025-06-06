@@ -113,9 +113,6 @@ export function LoginForm() {
                 </div>
               )}
             />
-            <Button variant="link" className="p-0 text-sm" type="button">
-              ¿Olvidó su contraseña?
-            </Button>
           </div>
           <Button type="submit" className="w-full bg-[#001F3F] hover:bg-[#003366]" disabled={isLoading}>
             {isLoading ? (

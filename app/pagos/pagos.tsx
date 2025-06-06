@@ -436,7 +436,7 @@ export default function PagosPage({ pagos: pagosinitial }: PagosPageProps) {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${pago.estado === "Completado"
                               ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
+                              : pago.estado === "Cancelado"? "bg-red-400 text-red-800":"bg-yellow-100 text-yellow-800"
                             }`}
                         >
                           {pago.estado}

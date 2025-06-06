@@ -23,9 +23,9 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter">Legal Manager</h1>
+              <h1 className="text-3xl font-bold tracking-tighter">Gestion de Abogado</h1>
               <p className="text-muted-foreground text-gray-300">
-                Sistema de gestión integral para profesionales del derecho
+                Sistema de gestión integral para profesional del derecho
               </p>
             </div>
             <div className="space-y-2 pt-4">

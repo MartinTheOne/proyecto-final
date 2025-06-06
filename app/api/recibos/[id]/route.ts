@@ -93,7 +93,7 @@ function generateReceipt(doc: jsPDF, pago: any, configuracion: any) {
 
   doc.setFontSize(22)
   doc.setTextColor(primaryColor)
-  doc.text("LEGALMANAGER", pageWidth / 2, margin + 10, { align: "center" })
+  doc.text("Gestion de Abogado", pageWidth / 2, margin + 10, { align: "center" })
 
   doc.setFontSize(16)
   doc.text("Recibo de Pago", pageWidth / 2, margin + 20, { align: "center" })
@@ -232,5 +232,5 @@ function generateReceipt(doc: jsPDF, pago: any, configuracion: any) {
   doc.text("Este documento es un comprobante de pago válido.", pageWidth / 2, pageHeight - 30, { align: "center" })
   doc.text("Gracias por confiar en nuestros servicios legales.", pageWidth / 2, pageHeight - 25, { align: "center" })
   doc.setTextColor(primaryColor)
-  doc.text("LegalManager © 2025", pageWidth / 2, pageHeight - 20, { align: "center" })
+  doc.text("Gestion de Abogado © 2025", pageWidth / 2, pageHeight - 20, { align: "center" })
 }
