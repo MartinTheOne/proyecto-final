@@ -183,7 +183,6 @@ export default function ConfiguracionPage({ configuracion: configuracionInicial 
             <Tabs defaultValue="perfil" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="perfil">Perfil</TabsTrigger>
-                    <TabsTrigger value="despacho">Despacho</TabsTrigger>
                     <TabsTrigger value="seguridad">Seguridad</TabsTrigger>
                 </TabsList>
                 <TabsContent value="perfil" className="space-y-4">
@@ -219,39 +218,7 @@ export default function ConfiguracionPage({ configuracion: configuracionInicial 
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="despacho" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Información del Despacho</CardTitle>
-                            <CardDescription>Actualice la información de su despacho legal</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nombre-despacho">Nombre del Despacho</Label>
-                                    <Input id="nombre-despacho" placeholder="González & Asociados" value={configuracion?.despacho.nombre ?? ""} onChange={(e) => setConfiguracion(prev => ({ ...prev, despacho: { ...prev.despacho, nombre: e.target.value } }))} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="rfc">RFC</Label>
-                                    <Input id="rfc" placeholder="GONA123456ABC" value={configuracion?.despacho.rfc ?? ""} onChange={(e) => setConfiguracion(prev => ({ ...prev, despacho: { ...prev.despacho, rfc: e.target.value } }))} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email-despacho">Email</Label>
-                                    <Input id="email-despacho" type="email" placeholder="contacto@gonzalezasociados.com" value={configuracion?.despacho.email ?? ""} onChange={(e) => setConfiguracion(prev => ({ ...prev, despacho: { ...prev.despacho, email: e.target.value } }))} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="telefono-despacho">Teléfono</Label>
-                                    <Input id="telefono-despacho" placeholder="555-987-6543" value={configuracion?.despacho.telefono ?? ""} onChange={(e) => setConfiguracion(prev => ({ ...prev, despacho: { ...prev.despacho, telefono: e.target.value } }))} />
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="direccion-despacho">Dirección</Label>
-                                    <Textarea id="direccion-despacho" placeholder="Av. Reforma 500, Piso 12, Ciudad" value={configuracion?.despacho.direccion ?? ""} onChange={(e) => setConfiguracion(prev => ({ ...prev, despacho: { ...prev.despacho, direccion: e.target.value } }))} />
-                                </div>
-                            </div>
-                            <Button className="bg-[#001F3F] hover:bg-[#003366]" disabled={loading} onClick={handleSaveDespacho}>Guardar Cambios</Button>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+               
                 <TabsContent value="seguridad" className="space-y-4">
                     <Card>
                         <CardHeader>

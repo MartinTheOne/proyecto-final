@@ -57,10 +57,6 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{resumen.clientesActivos}</div>
-            <p className="text-xs text-muted-foreground">
-              {resumen.clientesIncremento > 0 ? "+" : ""}
-              {resumen.clientesIncremento} desde el mes pasado
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -70,10 +66,6 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{resumen.casosAbiertos}</div>
-            <p className="text-xs text-muted-foreground">
-              {resumen.casosIncremento > 0 ? "+" : ""}
-              {resumen.casosIncremento} desde el mes pasado
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -83,10 +75,6 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(resumen.pagosPendientes)}</div>
-            <p className="text-xs text-muted-foreground">
-              {resumen.pagosPendientesIncremento > 0 ? "+" : ""}
-              {formatCurrency(resumen.pagosPendientesIncremento)} desde el mes pasado
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -96,10 +84,6 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{resumen.tareasPendientes}</div>
-            <p className="text-xs text-muted-foreground">
-              {resumen.tareasIncremento > 0 ? "+" : ""}
-              {resumen.tareasIncremento} desde ayer
-            </p>
           </CardContent>
         </Card>
       </div>

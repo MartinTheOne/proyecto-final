@@ -138,6 +138,8 @@ export default function TareasPage({ InitialTareas }: props) {
         tarea._id === currentTarea._id ? { ...tarea, ...values } : tarea,
       )
 
+      setTareas(updatedTarea)
+      setCurrentTarea(null)
 
       toast({
         title: "Tarea actualizada",
@@ -186,17 +188,45 @@ export default function TareasPage({ InitialTareas }: props) {
     }
   }
 
-  const handleCompletarTarea = (id: String) => {
-    setTareas(
-      tareas.map((tarea) =>
-        tarea._id === id
-          ? {
-            ...tarea,
-            estado: "Completada",
-          }
-          : tarea,
-      ),
-    )
+  const handleCompletarTarea = async (tareacompl:Tareas) => {
+    console.log("Completar tarea con ID:", currentTarea)
+    if (!tareacompl) return;
+    try {
+      const response = await fetch(`/api/tareas`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: tareacompl._id,estado: "Completada"}),
+      })
+      if (!response.ok) {
+        throw new Error(`Error al crear el cliente: ${response.statusText}`)
+      }
+      setTareas(
+        tareas.map((tarea) =>
+          tarea._id === tareacompl._id
+            ? {
+              ...tarea,
+              estado: "Completada",
+            }
+            : tarea,
+        ),
+      )
+      setCurrentTarea(null)
+
+      toast({
+        title: "Tarea actualizada",
+        description: "La tarea ha sido actualizada exitosamente.",
+      })
+
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo editar la tarea. Por favor, intente de nuevo.",
+        variant: "destructive",
+      });
+    }
+
   }
 
   // Contadores para las tarjetas de resumen
@@ -237,7 +267,7 @@ export default function TareasPage({ InitialTareas }: props) {
             <CardTitle className="text-sm font-medium">Próximos Vencimientos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">1</div>
             <p className="text-xs text-muted-foreground">En las próximas 24 horas</p>
           </CardContent>
         </Card>
@@ -336,7 +366,7 @@ export default function TareasPage({ InitialTareas }: props) {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {tarea.estado === "Pendiente" && (
-                              <DropdownMenuItem onClick={() => handleCompletarTarea(tarea._id)}>
+                              <DropdownMenuItem onClick={() => handleCompletarTarea(tarea)}>
                                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                                 <span>Marcar como completada</span>
                               </DropdownMenuItem>
